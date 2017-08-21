@@ -1,0 +1,17 @@
+{
+  "name": "pykg",
+  "version": "1.0.0",
+  "description": "Python dependency manager that uses package.json",
+  "main": "index.js",
+  "repository": "https://github.com/jogjayr/pykg.git",
+  "author": "Jayraj Jog<jogjayr@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^2.11.0",
+    "shelljs": "^0.7.8"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "bin": "./index.js"
+}
