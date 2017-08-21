@@ -45,4 +45,4 @@ I like npm/yarn. I thought this would be a good way to learn how Python librarie
 
 * You can take advantage of NPM/yarn features such as local caching for offline installs, lockfiles etc.
 * `package.json` is a standard in the NPM-world. `setup.py` and `requirements.txt` fulfill some of the functions but not all
-* You don't need virtualenv. npm/yarn installs dependencies into `node_modules` by default and `pykg` sets the `PYTHONPATH` so that imports just work
+* You don't need virtualenv. npm/yarn installs dependencies into `node_modules` by default and `pykg` sets the `PYTHONPATH` so that imports just work when invoking `package.json` scripts
