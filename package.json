@@ -1,6 +1,6 @@
 {
   "name": "pykg",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Python dependency manager that uses package.json",
   "main": "index.js",
   "repository": "https://github.com/jogjayr/pykg.git",
