@@ -21,7 +21,7 @@ program
 
 program.command('start')
   .action(() => {
-    const pythonPath = getPythonPath();
+    const pythonPath = getPythonPath(process.cwd());
     const commandToRun = `PYTHONPATH=${pythonPath}:$PYTHONPATH; export PYTHONPATH;npm start`;
     shell.exec(commandToRun);
   })

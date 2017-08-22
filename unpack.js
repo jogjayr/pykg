@@ -1,20 +1,20 @@
 const { join } = require('path');
-let packageJson = require(join(process.cwd(), 'package.json'));
 
+const pathFromDepList = depList => depList.reduce((prev, depName) => {
+  const packageMainPath = join(process.cwd(), 'node_modules', depName);
+  if (prev) {
+    prev = `${prev}:${packageMainPath}`;
+  } else {
+    prev = packageMainPath;
+  }
+  prev = `${prev}:${getPythonPath(packageMainPath)}`;
+  return prev;
+}, '');
 
-module.exports = function getPythonPath() {
-  const pathFromDepList = depList => depList.reduce((prev, depName) => {
-    const packageMainPath = join(process.cwd(), 'node_modules', depName);
-    if (prev) {
-      prev += `:${packageMainPath}`;
-    } else {
-      prev = packageMainPath
-    }
-    return prev;
-  }, '');
-  
+const getPythonPath = cwd => {
   let depPath, devDepPath;
-  
+  let packageJson = require(join(cwd, 'package.json'));
+
   if (packageJson.dependencies) {
     depPath = pathFromDepList(Object.keys(packageJson.dependencies));
   }
@@ -29,4 +29,6 @@ module.exports = function getPythonPath() {
   } else if (devDepPath) {
     return devDepPath;
   }
-};
+}
+
+module.exports = getPythonPath;
