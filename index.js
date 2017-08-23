@@ -5,20 +5,45 @@ const getPythonPath = require('./unpack');
 const shell = require('shelljs');
 const yarnWhichInfo = shell.which('yarn');
 const npmWhichInfo = shell.which('npm');
+const { findOnNpm, publishToNpm, createPackageJsonWithDeps } = require('./lib/npm-registry');
+const { findOnPypi, downloadSource, depsFromReqs } = require('./lib/pypi');
 
-let pkgManager;
+let pkgManager = 'npm';
 
-if (yarnWhichInfo) {
-  pkgManager = 'yarn';
-} else if (npmWhichInfo) {
-  pkgManager = 'npm';
-} else {
-  console.error('You need either npm or yarn installed globally');
-  process.exit(1);
-}
+
+
 
 const addInstallHandler = otherDeps => {
-  console.log(otherDeps)
+  for (dep in otherDeps) {
+
+  
+    // check if dependency is available on NPM registry
+
+    if (!findOnNpm()) {
+      console.log('not found on npm, searching on pypi');
+      // if not available, search on PyPi
+      if (findOnPypi()) {
+        console.log('found on pypi!!')
+        // download the source code
+        const downloadLocation = downloadSource(dep);
+
+        // check if requirements.txt present, create dependency list
+        const deps = depsFromReqs(downloadLocation);
+
+        // create package.json with dependency list
+        createPackageJsonWithDeps(deps, downloadLocation);
+        
+        // publish to npm registry
+        publishToNpm(downloadLocation);
+      } else {
+        console.log('package not found on pypi');
+        process.exit(1);
+      }
+    }
+  }
+
+  process.exit(0);
+
   let depList = '';
   if (!otherDeps) {
     otherDeps = [];
@@ -28,12 +53,10 @@ const addInstallHandler = otherDeps => {
   }
   let commandToRun;
   if (depList) {
-    console.log('deplist', depList)
     if (pkgManager === 'npm') {
       commandToRun = `npm install --save ${depList}`;
     } else {
       commandToRun = `yarn add ${depList}`;
-      console.log('yarn', commandToRun)
     }
   } else {
     commandToRun = `${pkgManager} install`;
