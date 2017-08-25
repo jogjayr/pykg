@@ -5,39 +5,45 @@ const getPythonPath = require('./unpack');
 const shell = require('shelljs');
 const yarnWhichInfo = shell.which('yarn');
 const npmWhichInfo = shell.which('npm');
-const { findOnNpm, publishToNpm, createPackageJsonWithDeps } = require('./lib/npm-registry');
-const { findOnPypi, downloadSource, depsFromReqs } = require('./lib/pypi');
+const { findOnNpm, publishToNpm } = require('./lib/npm-registry');
+const { findOnPypi } = require('./lib/pypi');
 
 let pkgManager = 'npm';
 
+// Remove until package-finding logic is completely built
+// if (yarnWhichInfo) {
+//   pkgManager = 'yarn';
+// } else if (npmWhichInfo) {
+//   pkgManager = 'npm';
+// } else {
+//   console.error('You need either npm or yarn installed globally');
+//   process.exit(1);
+// }
 
-
+const availableOnNpm = {};
+const availableOnPypi = {};
 
 async function addInstallHandler(otherDeps) {
   for (dep of otherDeps) {
-
     try {
       // check if dependency is available on NPM registry
-      const isAvailableOnNpm = await(findOnNpm(dep));
-      if (!isAvailableOnNpm) {
-        console.log('not found on npm, searching on pypi');
-        // if not available, search on PyPi
-        if (findOnPypi()) {
-          console.log('found on pypi!!')
-          // download the source code
-          const downloadLocation = downloadSource(dep);
-
-          // check if requirements.txt present, create dependency list
-          const deps = depsFromReqs(downloadLocation);
-
-          // create package.json with dependency list
-          createPackageJsonWithDeps(deps, downloadLocation);
-          
+      if (availableOnNpm[dep] === undefined) {
+        const isAvailableOnNpm = await(findOnNpm(dep));
+        if (!isAvailableOnNpm) {
+          // if not available, search on PyPi
+          if (availableOnPypi[dep] === undefined) {
+            const pypiReleaseInfo = await findOnPypi(dep);
+            availableOnPypi[dep] = true;
+          }
+  
           // publish to npm registry
-          publishToNpm(downloadLocation);
+          const publishSuccess = await publishToNpm(pypiReleaseInfo);
+
+          if (publishSuccess) {
+            availableOnNpm[dep] = true;
+          }
         } else {
-          console.log('package not found on pypi');
-          process.exit(1);
+          availableOnNpm[dep] = true;
         }
       }
     } catch(e) {
