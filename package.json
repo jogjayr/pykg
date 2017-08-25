@@ -9,12 +9,16 @@
   "dependencies": {
     "@pypi/django": "^1.11.5",
     "commander": "^2.11.0",
+    "gunzip-maybe": "^1.4.1",
     "request": "^2.81.0",
     "request-promise": "^4.2.1",
-    "shelljs": "^0.7.8"
+    "shelljs": "^0.7.8",
+    "tar-fs": "^1.15.3",
+    "tar-stream": "^1.5.4"
   },
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "server": "node server/index.js"
   },
   "bin": "./index.js"
 }

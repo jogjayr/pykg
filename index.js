@@ -5,39 +5,42 @@ const getPythonPath = require('./unpack');
 const shell = require('shelljs');
 const yarnWhichInfo = shell.which('yarn');
 const npmWhichInfo = shell.which('npm');
-const { findOnNpm, publishToNpm, createPackageJsonWithDeps } = require('./lib/npm-registry');
-const { findOnPypi, downloadSource, depsFromReqs } = require('./lib/pypi');
+const { findOnNpm, publishToNpm, getInstalledPackageManager } = require('./lib/npm-registry');
+const { findOnPypi } = require('./lib/pypi');
 
-let pkgManager = 'npm';
+// let pkgManager = 'npm';
+// Remove until package-finding logic is completely built
+let pkgManager = getInstalledPackageManager();
 
-
-
+const availableOnNpm = {};
+const availableOnPypi = {};
 
 async function addInstallHandler(otherDeps) {
   for (dep of otherDeps) {
-
     try {
       // check if dependency is available on NPM registry
-      const isAvailableOnNpm = await(findOnNpm(dep));
-      if (!isAvailableOnNpm) {
-        console.log('not found on npm, searching on pypi');
-        // if not available, search on PyPi
-        if (findOnPypi()) {
-          console.log('found on pypi!!')
-          // download the source code
-          const downloadLocation = downloadSource(dep);
-
-          // check if requirements.txt present, create dependency list
-          const deps = depsFromReqs(downloadLocation);
-
-          // create package.json with dependency list
-          createPackageJsonWithDeps(deps, downloadLocation);
-          
-          // publish to npm registry
-          publishToNpm(downloadLocation);
+      if (availableOnNpm[dep] === undefined) {
+        const isAvailableOnNpm = await(findOnNpm(dep));
+        if (!isAvailableOnNpm) {
+          // if not available, search on PyPi
+          if (availableOnPypi[dep] === undefined) {
+            const pypiReleaseInfo = await findOnPypi(dep);
+            if (pypiReleaseInfo) {
+              availableOnPypi[dep] = true;
+              // publish to npm registry
+              const publishSuccess = await publishToNpm(JSON.parse(pypiReleaseInfo), program);
+              if (publishSuccess) {
+                availableOnNpm[dep] = true;
+              }
+            } else {
+              console.error(`Package ${dep} not found on pypi`);
+              process.exit(1);
+            }
+          } else {
+            continue;
+          }
         } else {
-          console.log('package not found on pypi');
-          process.exit(1);
+          availableOnNpm[dep] = true;
         }
       }
     } catch(e) {
@@ -46,7 +49,6 @@ async function addInstallHandler(otherDeps) {
     }
   }
 
-  process.exit(0);
 
   let depList = '';
   if (!otherDeps) {
@@ -65,7 +67,10 @@ async function addInstallHandler(otherDeps) {
   } else {
     commandToRun = `${pkgManager} install`;
   }
-  shell.exec(commandToRun);
+  console.log(`Running: ${commandToRun}`)
+  if (!program.dryRun) {
+    shell.exec(commandToRun);
+  }
 };
 
 program
@@ -82,5 +87,5 @@ program.command('start')
     const commandToRun = `PYTHONPATH=${pythonPath}:$PYTHONPATH; export PYTHONPATH; ${pkgManager} start`;
     shell.exec(commandToRun);
   })
-
+program.option('-d, --dry-run', 'No side effects, just print out the npm/yarn commands you are planning to execute');
 program.parse(process.argv);
