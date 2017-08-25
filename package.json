@@ -7,7 +7,10 @@
   "author": "Jayraj Jog<jogjayr@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "@pypi/django": "^1.11.5",
     "commander": "^2.11.0",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.1",
     "shelljs": "^0.7.8"
   },
   "scripts": {

@@ -13,32 +13,36 @@ let pkgManager = 'npm';
 
 
 
-const addInstallHandler = otherDeps => {
-  for (dep in otherDeps) {
+async function addInstallHandler(otherDeps) {
+  for (dep of otherDeps) {
 
-  
-    // check if dependency is available on NPM registry
+    try {
+      // check if dependency is available on NPM registry
+      const isAvailableOnNpm = await(findOnNpm(dep));
+      if (!isAvailableOnNpm) {
+        console.log('not found on npm, searching on pypi');
+        // if not available, search on PyPi
+        if (findOnPypi()) {
+          console.log('found on pypi!!')
+          // download the source code
+          const downloadLocation = downloadSource(dep);
 
-    if (!findOnNpm()) {
-      console.log('not found on npm, searching on pypi');
-      // if not available, search on PyPi
-      if (findOnPypi()) {
-        console.log('found on pypi!!')
-        // download the source code
-        const downloadLocation = downloadSource(dep);
+          // check if requirements.txt present, create dependency list
+          const deps = depsFromReqs(downloadLocation);
 
-        // check if requirements.txt present, create dependency list
-        const deps = depsFromReqs(downloadLocation);
-
-        // create package.json with dependency list
-        createPackageJsonWithDeps(deps, downloadLocation);
-        
-        // publish to npm registry
-        publishToNpm(downloadLocation);
-      } else {
-        console.log('package not found on pypi');
-        process.exit(1);
+          // create package.json with dependency list
+          createPackageJsonWithDeps(deps, downloadLocation);
+          
+          // publish to npm registry
+          publishToNpm(downloadLocation);
+        } else {
+          console.log('package not found on pypi');
+          process.exit(1);
+        }
       }
+    } catch(e) {
+      console.error(e);
+      process.exit(1);
     }
   }
 
