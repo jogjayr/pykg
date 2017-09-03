@@ -33,14 +33,19 @@ async function addInstallHandler(otherDeps) {
           // if not available, search on PyPi
           if (availableOnPypi[dep] === undefined) {
             const pypiReleaseInfo = await findOnPypi(dep);
-            availableOnPypi[dep] = true;
-          }
-  
-          // publish to npm registry
-          const publishSuccess = await publishToNpm(pypiReleaseInfo);
-
-          if (publishSuccess) {
-            availableOnNpm[dep] = true;
+            if (pypiReleaseInfo) {
+              availableOnPypi[dep] = true;
+              // publish to npm registry
+              const publishSuccess = await publishToNpm(JSON.parse(pypiReleaseInfo));
+              if (publishSuccess) {
+                availableOnNpm[dep] = true;
+              }
+            } else {
+              console.error(`Package ${dep} not found on pypi`);
+              process.exit(1);
+            }
+          } else {
+            continue;
           }
         } else {
           availableOnNpm[dep] = true;
@@ -52,7 +57,6 @@ async function addInstallHandler(otherDeps) {
     }
   }
 
-  process.exit(0);
 
   let depList = '';
   if (!otherDeps) {
@@ -71,7 +75,8 @@ async function addInstallHandler(otherDeps) {
   } else {
     commandToRun = `${pkgManager} install`;
   }
-  shell.exec(commandToRun);
+  // shell.exec(commandToRun);
+  console.log(`Running: ${commandToRun}`)
 };
 
 program
