@@ -23,8 +23,9 @@ NB: Only `npm start` is supported now
 # Known limitations
 
 * Doesn't support libraries with native extensions
-* Only been tested with requests and django so far [https://github.com/jogjayr/npm-for-py](https://github.com/jogjayr/npm-for-py)
-* I only have 6 Python libraries up on the [NPM registry](https://www.npmjs.com/org/pypi) so far
+* I only have 7 Python libraries up on the [NPM registry](https://www.npmjs.com/org/pypi) so far
+* Doesn't do dependency resolution from `requirements.txt`
+* Doesn't add scripts from libraries to your `PATH`
 
 
 # FAQs
