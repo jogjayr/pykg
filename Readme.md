@@ -22,7 +22,7 @@ or if you prefer `yarn`
 
     pykg install requests django
 
-## Run an npm script
+## Run an [npm script](https://docs.npmjs.com/misc/scripts)
 
 NB: Only `npm start` is supported now
 
