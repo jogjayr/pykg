@@ -9,6 +9,14 @@ A thin shell around npm for installing Python libraries
 
 # Usage
 
+## Initialize your `package.json`
+
+    npm init
+
+or if you prefer `yarn`
+
+    yarn init
+
 ## Add some dependencies
 
     pykg install requests django
