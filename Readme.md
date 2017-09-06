@@ -11,6 +11,7 @@ A thin shell around npm for installing Python libraries
 
 ## Initialize your `package.json`
 
+    # Inside your new project's directory root
     npm init
 
 or if you prefer `yarn`
